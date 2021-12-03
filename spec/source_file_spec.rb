@@ -515,6 +515,32 @@ describe SimpleCov::SourceFile do
     end
   end
 
+  context "a file with case and inline whens" do
+    COVERAGE_FOR_CASE_WITH_INLINE_WHENS_RB = {
+      "lines" => [1, 1, 0, 1, 0, 0, nil],
+      "branches" =>  {
+        [:case, 0, 2, 0, 7, 3] => {
+          [:when, 1, 3, 16, 3, 17] => 0,
+          [:when, 2, 4, 16, 4, 17] => 1,
+          [:when, 3, 5, 16, 5, 17] => 0,
+          [:else, 4, 6, 4, 6, 25] => 0
+        }
+      }
+    }.freeze
+
+    subject do
+      SimpleCov::SourceFile.new(source_fixture("case_with_inline_whens.rb"), COVERAGE_FOR_CASE_WITH_INLINE_WHENS_RB)
+    end
+
+    it "reports branch coverage for expected whens" do
+      expect(subject.total_branches.size).to eq 4
+      expect(subject.covered_branches.size).to eq 1
+
+      expect(subject.branches.map(&:coverage)).to eq([0, 1, 0, 0])
+      expect(subject.branches.map(&:report_line)).to eq([3, 4, 5, 6])
+    end
+  end
+
   context "a file with if/elsif" do
     COVERAGE_FOR_ELSIF_RB = {
       "lines" => [1, 1, 1, 0, 1, 0, 1, 1, nil, 0, nil, nil, nil],
